@@ -1,21 +1,16 @@
 import CustomInput from "@/components/CustomInput";
 import useProducts from "@/hooks/useProducts";
+import useCart from "@/hooks/useCart";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { useEffect, useState } from "react";
-import {
-  ScrollView,
-  Text,
-  View,
-  TouchableOpacity,
-  ActivityIndicator,
-  Image,
-} from "react-native";
+import { ScrollView, Text, View, TouchableOpacity, Image, ActivityIndicator } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useState, useEffect } from "react";
 
 export default function HomeScreen() {
   const { products, getCategories, fetchingProducts } = useProducts();
+  const { addToCart, totalItems } = useCart();
   const [categories, setCategories] = useState<any[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -26,8 +21,9 @@ export default function HomeScreen() {
     const fetchCategories = async () => {
       const cats = await getCategories();
       if (cats) {
-        const categoryList = cats.map((cat: any) =>
-          typeof cat === "string" ? cat : cat.slug || cat.name || cat
+        // Handle both string arrays and object arrays from API
+        const categoryList = cats.map((cat: any) => 
+          typeof cat === 'string' ? cat : cat.slug || cat.name || cat
         );
         setCategories([{ slug: "all", name: "All Products" }, ...cats]);
       }
@@ -38,41 +34,42 @@ export default function HomeScreen() {
   useEffect(() => {
     if (products) {
       let filtered = products;
-
+      
+      // Filter by category
       if (selectedCategory !== "all") {
-        filtered = products.filter(
-          (product: any) => product.category === selectedCategory
-        );
+        filtered = filtered.filter(product => product.category === selectedCategory);
       }
-
+      
+      // Filter by search query
       if (searchQuery.trim()) {
-        filtered = products.filter(
-          (product: any) =>
-            product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            product.description
-              .toLowerCase()
-              .includes(searchQuery.toLowerCase())
+        filtered = filtered.filter(product =>
+          product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          product.description.toLowerCase().includes(searchQuery.toLowerCase())
         );
       }
-
+      
       setFilteredProducts(filtered);
     }
-  }, [products, filteredProducts, searchQuery]);
+  }, [products, selectedCategory, searchQuery]);
 
   const renderCategoryItem = ({ item }: { item: any }) => {
-    const categorySlug = typeof item === "string" ? item : item.slug;
-    const categoryName = typeof item === "string" ? item : item.name;
-
+    const categorySlug = typeof item === 'string' ? item : item.slug;
+    const categoryName = typeof item === 'string' ? item : item.name;
+    
     return (
       <TouchableOpacity
         onPress={() => setSelectedCategory(categorySlug)}
-        className={`px-4 py-2 mr-4 rounded-full ${
-          selectedCategory === categorySlug ? "bg-blue-500" : "bg-gray-100"
+        className={`px-4 py-2 mr-3 rounded-full ${
+          selectedCategory === categorySlug
+            ? "bg-blue-500"
+            : "bg-gray-100"
         }`}
       >
         <Text
           className={`capitalize font-medium ${
-            selectedCategory === categorySlug ? "text-white" : "text-gray-700"
+            selectedCategory === categorySlug
+              ? "text-white"
+              : "text-gray-700"
           }`}
         >
           {categoryName === "all" ? "All Products" : categoryName}
@@ -81,94 +78,92 @@ export default function HomeScreen() {
     );
   };
 
-  const renderProductItem = ({ item }: { item: any }) => {
-    return (
-      <TouchableOpacity
-        onPress={() =>
-          router.push({
-            pathname: "/product/[productId]",
-            params: { productId: item.id.toString() },
-          })
-        }
-        className="bg-white rounded-xl shadow-sm mb-4 border border-gray-100 overflow-hidden"
-      >
-        <Image
-          source={{ uri: item.thumbnail }}
-          className="w-full h-48"
-          resizeMode="cover"
-        />
-
-        <View className="p-4">
-          <View className="flex-row justify-between items-start mb-2">
-            <Text
-              className="text-lg font-semibold text-gray-800 flex-1 mr-2"
-              numberOfLines={2}
-            >
-              {item.title}
-            </Text>
-            <View className="flex-row items-center">
-              <Ionicons name="star" size={16} color="#FFA500" />
-              <Text className="text-sm text-gray-600 ml-1">{item.rating}</Text>
-            </View>
-          </View>
-
-          <Text className="text-sm text-gray-600 mb-3" numberOfLines={2}>
-            {item.description}
+  const renderProductItem = ({ item }: { item: any }) => (
+    <TouchableOpacity
+      onPress={() => router.push(`/product/${item.id}`)}
+      className="bg-white rounded-xl shadow-sm border border-gray-100 mb-4 overflow-hidden"
+    >
+      <Image
+        source={{ uri: item.thumbnail }}
+        className="w-full h-48"
+        resizeMode="cover"
+      />
+      <View className="p-4">
+        <View className="flex-row justify-between items-start mb-2">
+          <Text className="text-lg font-semibold text-gray-800 flex-1 mr-2" numberOfLines={2}>
+            {item.title}
           </Text>
-
-          <View className="flex-row justify-between items-center">
-            <View className="flex-row items-center">
-              <Text className="text-xl font-bold text-blue-600">
-                RWF{item.price}
-              </Text>
-              {item.discountPercentage > 0 && (
-                <View className="ml-2 bg-red-100 px-2 rounded">
-                  <Text className="text-xs text-red-600 font-medium">
-                    -{item.discountPercentage.toFixed(0)}%
-                  </Text>
-                </View>
-              )}
-            </View>
-            <TouchableOpacity className="bg-blue-500 px-4 py-2 rounded-full flex-row items-center">
-              <Ionicons name="add" size={16} color="white" />
-              <Text className="text-white font-medium ml-1">Add</Text>
-            </TouchableOpacity>
-          </View>
-
-          <View className="flex-row justify-between items-center mt-2">
-            <Text className="text-xs text-gray-500">
-              Category: {item.category}
-            </Text>
-            <Text className="text-xs text-gray-500">Stock: {item.stock}</Text>
+          <View className="flex-row items-center">
+            <Ionicons name="star" size={16} color="#FFA500" />
+            <Text className="text-sm text-gray-600 ml-1">{item.rating}</Text>
           </View>
         </View>
-      </TouchableOpacity>
-    );
-  };
-  return (
-    <SafeAreaView className="flex-1 px-4 bg-gray-50">
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <View className="pt-3 pb-1 border-gray-100 flex-row justify-between items-center">
+        
+        <Text className="text-sm text-gray-600 mb-3" numberOfLines={2}>
+          {item.description}
+        </Text>
+        
+        <View className="flex-row justify-between items-center">
           <View className="flex-row items-center">
-            <Ionicons name="cart" size={24} color="#3B82F6" />
-            <Text className="text-xl font-bold ml-2 text-gray-800">Shop</Text>
+            <Text className="text-xl font-bold text-blue-600">${item.price}</Text>
+            {item.discountPercentage > 0 && (
+              <View className="ml-2 bg-red-100 px-2 py-1 rounded">
+                <Text className="text-xs text-red-600 font-medium">
+                  -{item.discountPercentage.toFixed(0)}%
+                </Text>
+              </View>
+            )}
+          </View>
+          
+          <TouchableOpacity 
+            onPress={() => addToCart(item, 1)}
+            className="bg-blue-500 px-4 py-2 rounded-full flex-row items-center"
+          >
+            <Ionicons name="add" size={16} color="white" />
+            <Text className="text-white font-medium ml-1">Add</Text>
+          </TouchableOpacity>
+        </View>
+        
+        <View className="flex-row justify-between items-center mt-2">
+          <Text className="text-xs text-gray-500 capitalize">
+            Category: {item.category}
+          </Text>
+          <Text className="text-xs text-gray-500">
+            Stock: {item.stock}
+          </Text>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+
+  return (
+    <SafeAreaView className="flex-1 bg-gray-50">
+      <ScrollView className="px-4" showsVerticalScrollIndicator={false}>
+        {/* Header */}
+        <View className="pt-3 pb-4 flex-row justify-between items-center">
+          <View className="flex-row items-center">
+            <Ionicons name="storefront" size={28} color="#3B82F6" />
+            <Text className="text-2xl font-bold ml-2 text-gray-800">Shop</Text>
           </View>
           {username && (
-            <View className="flex-row items-center bg-blue-50 px-3 py-1 rounded-full">
-              <Ionicons
-                name="person-circle-outline"
-                size={16}
-                color="#3B82F6"
-              />
-              <Text className="text-sm font-medium text-blue-600 ml-1">
-                {username}
-              </Text>
-            </View>
+          <TouchableOpacity 
+            onPress={() => router.push('/cart')}
+            className="flex-row items-center bg-blue-50 px-4 py-2 rounded-full relative"
+          >
+            <Ionicons name="person-circle-outline" size={20} color="#3B82F6" />
+            <Text className="text-sm font-medium text-blue-600 ml-2">{username}</Text>
+            {totalItems > 0 && (
+              <View className="absolute -top-1 -right-1 bg-red-500 rounded-full w-5 h-5 justify-center items-center">
+                <Text className="text-white text-xs font-bold">{totalItems}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
           )}
         </View>
 
+        {/* Search Bar */}
         <View className="mb-4">
-          <CustomInput
+          <CustomInput 
             icon={<Ionicons name="search-outline" size={24} color="#9CA3AF" />}
             placeholder="Search products..."
             value={searchQuery}
@@ -178,22 +173,20 @@ export default function HomeScreen() {
           />
         </View>
 
+        {/* Categories */}
         <View className="mb-4">
-          <Text className="text-lg font-semibold text-gray-800 mb-3">
-            Categories
-          </Text>
+          <Text className="text-lg font-semibold text-gray-800 mb-3">Categories</Text>
           <FlatList
             data={categories}
-            horizontal
-            keyExtractor={(item) =>
-              typeof item === "string" ? item : item.slug
-            }
             renderItem={renderCategoryItem}
+            keyExtractor={(item) => typeof item === 'string' ? item : item.slug}
+            horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={{ paddingBottom: 8 }}
           />
         </View>
 
+        {/* Products Header */}
         <View className="flex-row justify-between items-center mb-4">
           <Text className="text-lg font-semibold text-gray-800">Products</Text>
           <Text className="text-sm text-gray-500">
@@ -201,6 +194,7 @@ export default function HomeScreen() {
           </Text>
         </View>
 
+        {/* Loading State */}
         {fetchingProducts && (
           <View className="flex-1 justify-center items-center py-20">
             <ActivityIndicator size="large" color="#3B82F6" />
@@ -208,6 +202,7 @@ export default function HomeScreen() {
           </View>
         )}
 
+        {/* Products Grid */}
         {!fetchingProducts && filteredProducts && (
           <FlatList
             data={filteredProducts}
@@ -222,9 +217,7 @@ export default function HomeScreen() {
         {!fetchingProducts && filteredProducts?.length === 0 && (
           <View className="flex-1 justify-center items-center py-20">
             <Ionicons name="search-outline" size={64} color="#D1D5DB" />
-            <Text className="text-gray-500 text-lg mt-4">
-              No products found
-            </Text>
+            <Text className="text-gray-500 text-lg mt-4">No products found</Text>
             <Text className="text-gray-400 text-center mt-2">
               Try adjusting your search or category filter
             </Text>

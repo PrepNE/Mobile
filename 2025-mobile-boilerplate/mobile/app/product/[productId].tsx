@@ -1,15 +1,23 @@
-import { View, Text, ScrollView, Image, TouchableOpacity, ActivityIndicator, Dimensions } from 'react-native'
-import React, { useEffect, useMemo, useState } from 'react'
-import useProducts from '@/hooks/useProducts'
-import useCarts from '@/hooks/useCart'
-import { usePathname, useRouter } from 'expo-router';
-import { useToast } from 'react-native-toast-notifications';
-import { Product } from '@/types';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { FlatList } from 'react-native-gesture-handler';
+import {
+  View,
+  Text,
+  ScrollView,
+  Image,
+  TouchableOpacity,
+  ActivityIndicator,
+  Dimensions,
+} from "react-native";
+import React, { useEffect, useMemo, useState } from "react";
+import useProducts from "@/hooks/useProducts";
+import useCarts from "@/hooks/useCart";
+import { router, usePathname, useRouter } from "expo-router";
+import { useToast } from "react-native-toast-notifications";
+import { Product } from "@/types";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
+import { FlatList } from "react-native-gesture-handler";
 
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get("window");
 
 const ProductDetails = () => {
   const { getProductById } = useProducts();
@@ -24,7 +32,7 @@ const ProductDetails = () => {
 
   const productId = useMemo(() => {
     return parseInt(pathname.split("/")[2]);
-  }, [pathname])
+  }, [pathname]);
 
   useEffect(() => {
     const fetchProductDetails = async () => {
@@ -43,18 +51,12 @@ const ProductDetails = () => {
       } finally {
         setLoading(false);
       }
-    }
+    };
 
     if (productId) {
       fetchProductDetails();
     }
   }, [productId]);
-
-  const handleAddToCart = () => {
-    if (product) {
-      addToCart(product, quantity);
-    }
-  };
 
   const adjustQuantity = (change: number) => {
     const newQuantity = quantity + change;
@@ -63,20 +65,11 @@ const ProductDetails = () => {
     }
   };
 
-  const renderImageItem = ({ item, index }: { item: string, index: number }) => (
-    <TouchableOpacity
-      onPress={() => setSelectedImageIndex(index)}
-      className={`mr-3 rounded-lg overflow-hidden ${
-        selectedImageIndex === index ? 'border-2 border-blue-500' : 'border border-gray-200'
-      }`}
-    >
-      <Image
-        source={{ uri: item }}
-        className="w-16 h-16"
-        resizeMode="cover"
-      />
-    </TouchableOpacity>
-  );
+  const handleAddToCart = () => {
+    if (product) {
+      addToCart(product, quantity);
+    }
+  };
 
   if (loading) {
     return (
@@ -102,12 +95,24 @@ const ProductDetails = () => {
     );
   }
 
-  const discountedPrice = product.price - (product.price * product.discountPercentage / 100);
+  const renderImageItem = ({ item, index }: { item: any; index: number }) => {
+    return (
+      <TouchableOpacity>
+        <Image
+          source={{ uri: item }}
+          className="w-16 h-16"
+          resizeMode="cover"
+        />
+      </TouchableOpacity>
+    );
+  };
+
+  const discountedPrice =
+    product.price - (product.price * product.discountPercentage) / 100;
   const isProductFavorite = product ? isFavorite(product.id) : false;
 
   return (
     <SafeAreaView className="flex-1 bg-white">
-
       <View className="flex-row justify-between items-center px-4 py-3 border-b border-gray-100">
         <TouchableOpacity
           onPress={() => router.back()}
@@ -115,11 +120,13 @@ const ProductDetails = () => {
         >
           <Ionicons name="arrow-back" size={24} color="#374151" />
         </TouchableOpacity>
-        
-        <Text className="text-lg font-semibold text-gray-800">Product Details</Text>
-        
+
+        <Text className="text-lg font-semibold text-gray-800">
+          Product Details
+        </Text>
+
         <TouchableOpacity
-          onPress={() => router.push('/cart')}
+          onPress={() => router.push("/cart")}
           className="p-2 rounded-full bg-gray-100 relative"
         >
           <Ionicons name="cart" size={24} color="#374151" />
@@ -132,16 +139,16 @@ const ProductDetails = () => {
       </View>
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {/* Main Product Image */}
         <View className="bg-gray-50">
           <Image
-            source={{ uri: product.images?.[selectedImageIndex] || product.thumbnail }}
+            source={{
+              uri: product.images?.[selectedImageIndex] || product.thumbnail,
+            }}
             style={{ width: width, height: width * 0.8 }}
             resizeMode="contain"
           />
         </View>
 
-        {/* Image Gallery */}
         {product.images && product.images.length > 1 && (
           <View className="px-4 py-3 bg-gray-50">
             <FlatList
@@ -154,44 +161,48 @@ const ProductDetails = () => {
           </View>
         )}
 
-        {/* Product Info */}
         <View className="px-4 py-6">
-          {/* Title, Brand and Favorite */}
           <View className="mb-4">
             <View className="flex-row justify-between items-start">
-              <View className="flex-1 mr-4">
-                <Text className="text-2xl font-bold text-gray-800 mb-2">{product.title}</Text>
-                <Text className="text-lg text-blue-600 font-medium">{product.brand}</Text>
+              <View className="flex mr-4">
+                <Text className="text-2xl font-bold text-gray-800 mb-2">
+                  {product.title}
+                </Text>
+                <Text className="text-lg text-blue-600 font-medium">
+                  {product.brand}
+                </Text>
               </View>
               <TouchableOpacity
                 onPress={() => toggleFavorite(product)}
                 className="p-2 rounded-full"
               >
-                <Ionicons 
-                  name={isProductFavorite ? "heart" : "heart-outline"} 
-                  size={28} 
-                  color={isProductFavorite ? "#EF4444" : "#9CA3AF"} 
+                <Ionicons
+                  name={isProductFavorite ? "heart" : "heart-outline"}
+                  size={28}
+                  color={isProductFavorite ? "#EF4444" : "#9CA3AF"}
                 />
               </TouchableOpacity>
             </View>
           </View>
 
-          {/* Rating and Category */}
           <View className="flex-row justify-between items-center mb-4">
             <View className="flex-row items-center">
               <Ionicons name="star" size={20} color="#FFA500" />
-              <Text className="text-lg font-medium text-gray-700 ml-1">{product.rating}</Text>
+              <Text className="text-lg font-medium text-gray-700 ml-1">
+                {product.rating}
+              </Text>
               <Text className="text-gray-500 ml-1">rating</Text>
             </View>
             <View className="bg-gray-100 px-3 py-1 rounded-full">
-              <Text className="text-sm text-gray-600 capitalize">{product.category}</Text>
+              <Text className="text-sm capitalize text-gray-600">
+                {product.category}
+              </Text>
             </View>
           </View>
 
-          {/* Price */}
           <View className="flex-row items-center mb-6">
             <Text className="text-3xl font-bold text-green-600">
-              ${discountedPrice.toFixed(2)}
+              RWF{discountedPrice.toFixed(2)}
             </Text>
             {product.discountPercentage > 0 && (
               <View className="ml-3">
@@ -207,59 +218,87 @@ const ProductDetails = () => {
             )}
           </View>
 
-          {/* Stock Info */}
           <View className="flex-row items-center mb-6">
-            <Ionicons 
-              name={product.stock > 10 ? "checkmark-circle" : product.stock > 0 ? "warning" : "close-circle"} 
-              size={20} 
-              color={product.stock > 10 ? "#10B981" : product.stock > 0 ? "#F59E0B" : "#EF4444"} 
+            <Ionicons
+              name={
+                product.stock > 10
+                  ? "checkmark-circle"
+                  : product.stock > 0
+                  ? "warning"
+                  : "close-circle"
+              }
+              size={20}
+              color={
+                product.stock > 10
+                  ? "#10B981"
+                  : product.stock > 0
+                  ? "#F59E0B"
+                  : "#EF4444"
+              }
             />
-            <Text className={`ml-2 font-medium ${
-              product.stock > 10 ? "text-green-600" : product.stock > 0 ? "text-yellow-600" : "text-red-600"
-            }`}>
-              {product.stock > 10 ? "In Stock" : product.stock > 0 ? `Only ${product.stock} left` : "Out of Stock"}
+            <Text
+              className={`ml-2 font-medium ${
+                product.stock > 10
+                  ? "text-green-600"
+                  : product.stock > 0
+                  ? "text-yellow-600"
+                  : "text-red-600"
+              }`}
+            >
+              {product.stock > 10
+                ? "In Stock"
+                : product.stock > 0
+                ? `Only ${product.stock} left`
+                : "Out of Stock"}
             </Text>
           </View>
 
-          {/* Description */}
           <View className="mb-6">
-            <Text className="text-lg font-semibold text-gray-800 mb-3">Description</Text>
-            <Text className="text-gray-600 leading-6">{product.description}</Text>
+            <Text className="text-lg font-semibold text-gray-800 mb-3">
+              Description
+            </Text>
+            <Text className="text-gray-600 leading-6">
+              {product.description}
+            </Text>
           </View>
 
-          {/* Quantity Selector */}
           <View className="mb-6">
-            <Text className="text-lg font-semibold text-gray-800 mb-3">Quantity</Text>
+            <Text className="text-lg font-semibold text-gray-800 mb-3">
+              Quantity
+            </Text>
             <View className="flex-row items-center">
               <TouchableOpacity
                 onPress={() => adjustQuantity(-1)}
                 disabled={quantity <= 1}
                 className={`w-12 h-12 rounded-full justify-center items-center border-2 ${
-                  quantity <= 1 ? "border-gray-200 bg-gray-100" : "border-blue-500 bg-blue-50"
+                  quantity <= 1
+                    ? "border-gray-200 bg-gray-100"
+                    : "border-blue-500 bg-blue-50"
                 }`}
               >
-                <Ionicons 
-                  name="remove" 
-                  size={20} 
-                  color={quantity <= 1 ? "#9CA3AF" : "#3B82F6"} 
+                <Ionicons
+                  name="remove"
+                  size={20}
+                  color={quantity <= 1 ? "#9CA3AF" : "#3B82F6"}
                 />
               </TouchableOpacity>
-              
+
               <Text className="text-xl font-bold text-gray-800 mx-6 min-w-[40px] text-center">
                 {quantity}
               </Text>
-              
               <TouchableOpacity
                 onPress={() => adjustQuantity(1)}
                 disabled={quantity >= product.stock}
                 className={`w-12 h-12 rounded-full justify-center items-center border-2 ${
-                  quantity >= product.stock ? "border-gray-200 bg-gray-100" : "border-blue-500 bg-blue-50"
+                  quantity >= product.stock
+                    ? "border-gray-200 bg-gray-100"
+                    : "border-blue-500 bg-blue-50"
                 }`}
               >
-                <Ionicons 
-                  name="add" 
-                  size={20} 
-                  color={quantity >= product.stock ? "#9CA3AF" : "#3B82F6"} 
+                <Ionicons
+                  name="add"
+                  size={20}
+                  color={quantity >= product.stock ? "#9CA3AF" : "#3B82F6"}
                 />
               </TouchableOpacity>
             </View>
@@ -267,7 +306,6 @@ const ProductDetails = () => {
         </View>
       </ScrollView>
 
-      {/* Bottom Actions */}
       <View className="px-4 py-4 border-t border-gray-100 bg-white">
         <View className="flex-row space-x-3">
           <TouchableOpacity
@@ -282,19 +320,19 @@ const ProductDetails = () => {
               {product.stock === 0 ? "Out of Stock" : "Add to Cart"}
             </Text>
           </TouchableOpacity>
-          
-          <TouchableOpacity 
+
+          <TouchableOpacity
             onPress={() => product && toggleFavorite(product)}
             className="bg-red-500 px-6 py-4 rounded-xl justify-center items-center"
           >
-            <Ionicons 
-              name={isProductFavorite ? "heart" : "heart-outline"} 
-              size={20} 
-              color="white" 
+            <Ionicons
+              name={isProductFavorite ? "heart" : "heart-outline"}
+              size={20}
+              color="white"
             />
           </TouchableOpacity>
         </View>
-        
+
         <Text className="text-center text-gray-500 text-sm mt-3">
           Total: ${(discountedPrice * quantity).toFixed(2)}
         </Text>

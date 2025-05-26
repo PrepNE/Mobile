@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import useCarts from '@/hooks/useCart';
 import { useRouter } from 'expo-router';
+import useOrders from '@/hooks/useOrders';
 
 const Cart = () => {
   const router = useRouter();
@@ -14,6 +15,7 @@ const Cart = () => {
     decreaseQuantity,
     getCartSummary
   } = useCarts();
+  const { placeOrder } = useOrders();
 
   const { totalItems, totalPrice, originalPrice, totalSavings, discountPercentage } = getCartSummary();
 
@@ -107,9 +109,12 @@ const Cart = () => {
           <Text className="text-base font-semibold">Total:</Text>
           <Text className="text-base font-semibold text-green-600">${totalPrice.toFixed(2)}</Text>
         </View>
-        <TouchableOpacity className="bg-blue-600 py-3 rounded-lg items-center">
-          <Text className="text-white font-semibold text-base">Proceed to Checkout</Text>
-        </TouchableOpacity>
+       <TouchableOpacity
+  className="bg-blue-600 py-3 rounded-lg items-center"
+  onPress={placeOrder}
+>
+  <Text className="text-white font-semibold text-base">Place Order</Text>
+</TouchableOpacity>
       </View>
     </SafeAreaView>
   );

@@ -1,5 +1,5 @@
 import { atom, selector } from "recoil";
-import { Product } from "./types";
+import { Order, Product } from "./types";
 
 export interface CartItem {
   product: Product;
@@ -7,24 +7,20 @@ export interface CartItem {
   addedAt: Date;
 }
 
-// Better approach: Use environment-aware key generation
 const isDev = __DEV__;
 let keyCounter = 0;
 
 const createKey = (name: string): string => {
   if (isDev) {
-    // In development, append counter to handle HMR
     return `${name}_${++keyCounter}_${Date.now()}`;
   }
-  // In production, use static keys
   return name;
 };
 
-export const usernameState = atom({
-  key: createKey('usernameState'),
-  default: ''
+export const ordersState = atom<Order[]>({
+  key: createKey('ordersState'),
+  default: [],
 });
-
 export const saveProductState = atom<Product | null>({
   key: createKey('saveProductState'),
   default: null

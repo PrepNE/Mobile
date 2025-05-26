@@ -1,3 +1,4 @@
+import { CartItem } from '@/store';
 import { TextInputProps } from 'react-native';
 
 export interface InputFieldProps extends TextInputProps {
@@ -57,4 +58,11 @@ export interface SearchFilters {
   maxPrice?: number;
   sortBy?: 'price' | 'rating' | 'title';
   sortOrder?: 'asc' | 'desc';
+}
+
+export interface Order {
+  id: number;
+  items: CartItem[];
+  total: number;
+  createdAt: string;
 }
