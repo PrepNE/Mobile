@@ -25,10 +25,6 @@ const Onbooarding = () => {
         ref={swiperRef}
         showsPagination={false}
         loop={false}
-        dot={<View className="w-[32px] h-[4px] mx-1 mb-10 bg-[#E2E8F0]" />}
-        activeDot={
-          <View className="w-[32px] h-[4px] mx-1 mb-10 bg-[#0286FF]" />
-        }
         onIndexChanged={(index) => setActiveIndex(index)}
       >
         {onboarding.map((item, index) => (
@@ -46,11 +42,7 @@ const Onbooarding = () => {
               </Text>
             </View>
 
-            <View
-              className={`w-[32px] h-[4px] mx-1  rounded-full ${
-                index === activeIndex ? "bg-[#0286FF]" : "bg-[#E2E8F0]"
-              }`}
-            />
+        
           </React.Fragment>
         ))}
       </Swiper>
