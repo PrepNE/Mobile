@@ -2415,10 +2415,14 @@ packages:
 
   expo-router@4.0.21:
     resolution: {integrity: sha512-z1U9cGZbgL+ZSHp533VMobOqdkUpFBlDXBpd9/JH+Q0wW49is0G2PrJVUYMzdwr30HSUltdO/19W8rRwjfOnFw==}
+  expo-router@4.0.21:
+    resolution: {integrity: sha512-z1U9cGZbgL+ZSHp533VMobOqdkUpFBlDXBpd9/JH+Q0wW49is0G2PrJVUYMzdwr30HSUltdO/19W8rRwjfOnFw==}
     peerDependencies:
       '@react-navigation/drawer': ^7.1.1
       '@testing-library/jest-native': '*'
       expo: '*'
+      expo-constants: ~17.0.8
+      expo-linking: ~7.0.5
       expo-constants: ~17.0.8
       expo-linking: ~7.0.5
       react-native-reanimated: '*'
